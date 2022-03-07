@@ -1,0 +1,18 @@
+.nav-title{
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #333333;
+    background-color: #F2F2F2;
+    padding: 1rem;
+}
+.pagination-container{
+    display:block ruby;
+    text-align: right
+}
+label.required:after {
+	content: '*';
+	color: red;
+}
+.align-items-center{
+    justify-items: center;
+}
