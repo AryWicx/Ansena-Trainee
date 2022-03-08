@@ -12,7 +12,7 @@ class Penjualan extends CI_Controller {
         $data = [
             'title' => "Transaksi",
             'content' => "content/list",
-            'links' => '<a type="button" href="'.base_url('penjualan/form').'" class="btn btn-primary mb-3">Penjualan</a>',
+            'links' => '<a type="button" href="'.base_url('kasir').'" class="btn btn-primary mb-3">Penjualan</a>',
             'show' => [
                 'no',
                 'tanggal',

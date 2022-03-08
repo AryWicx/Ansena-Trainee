@@ -16,3 +16,13 @@ label.required:after {
 .align-items-center{
     justify-items: center;
 }
+.card-product-container{
+    flex-flow: inherit;
+    display: flex;
+}
+.card-product{
+    margin: 0.5rem
+}
+.pills{
+    border-radius: 50%;
+}

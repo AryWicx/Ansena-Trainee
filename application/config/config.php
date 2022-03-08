@@ -23,7 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-
+date_default_timezone_set("Asia/Jakarta");
 $url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $url .= $_SERVER['SERVER_NAME']."";
 $url .= str_replace("index.php", "", $_SERVER['SCRIPT_NAME']);

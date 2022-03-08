@@ -5,15 +5,11 @@
                 <div class="d-flex justify-content-between mb-4">
                     <h4> <?= $this->uri->segment(3) ? 'Edit' : 'Tambah' ?> <?= isset($title) ? ucfirst($title) : "" ?></h4>
                 </div>
-                <?php if(validation_errors()){
-                    echo '<div class="alert alert-danger" role="alert" >'.validation_errors().'</div>';
-                } ?>
+                <?php if(validation_errors()) echo '<div class="alert alert-warning" role="alert" >'.validation_errors().'</div>'; ?>
+                <?php if($this->session->flashdata('massage')) echo $this->session->flashdata('massage'); ?>
+
                 <form action="<?= base_url('barang/save') ?>" class="mb-5" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="<?= isset($data['id']) ? $data['id'] : "" ?>">
-                    <div class="form-group mb-3">
-                        <label for="gambar" id="gambar" class="form-label required">Gambar</label>
-                        <input type="file" name="gambar"  class="form-control" accept="image/png, image/jpeg, image/jpg" required>
-                    </div>
                     <div class="form-group mb-3">
                         <label for="nama" id="nama" class="form-label required">Nama</label>
                         <input type="text" name="nama"  class="form-control" placeholder="Nama barang"  value="<?= isset($data['nama']) ? $data['nama'] : "" ?>">
@@ -22,10 +18,10 @@
                         <label for="deskripsi" class="form-label">Deskripsi</label>
                         <textarea name="deskripsi" id="deskripsi" rows="5" class="form-control" placeholder="Deskripsi barang"><?= isset($data['deskripsi']) ? $data['deskripsi'] : "" ?></textarea>
                     </div>
-                    <?php if(!isset($data['id'])){ ?>
+                    <?php if(!isset($data['id']) || !$data['id']){ ?>
                         <div class="form-group mb-3">
                             <label for="stok" class="form-label required" required>Stok</label>
-                            <input type="text" name="stok" id="stok" class="form-control number" placeholder="Jumlah stok">
+                            <input type="text" name="stok" id="stok" class="form-control number" placeholder="Jumlah stok" value="<?= isset($data['stok']) ? $data['stok'] : "" ?>">
                         </div>
                     <?php } ?>
                     <div class="form-group mb-3">
@@ -35,6 +31,10 @@
                     <div class="form-group mb-3">
                         <label for="harga_beli" class="form-label required" required>Harga Beli</label>
                         <input type="text" name="harga_beli" id="harga_beli" class="form-control number" placeholder="Harga beli"   value="<?= isset($data['harga_beli']) ? $data['harga_beli'] : "" ?>">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="gambar" id="gambar" class="form-label required">Gambar</label>
+                        <input type="file" name="gambar"  class="form-control" accept="image/png, image/jpeg, image/jpg">
                     </div>
                     <div class="d-grid gap-2 mt-4">
                         <button class="btn btn-blocks btn-primary" type="submit"><b><?= $this->uri->segment(3) ? 'Update' : 'Simpan' ?> </b></button>

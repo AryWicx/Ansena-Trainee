@@ -8,6 +8,7 @@
                         <input type="date" id="tanggal" class="form-control form-control-sm">
                     </div>
                 </div>
+                <?php if($this->session->flashdata('massage')) echo $this->session->flashdata('massage'); ?>
                 <div class="table-responsive">
                     <table class="table table-dark table-striped" id="data">
                         <thead>
@@ -32,8 +33,11 @@
 
 <script type='text/javascript'>
 var get_url = '<?=base_url(($this->uri->segment(1) ?: 'barang')."/load_data/")?>';
-var tanggal = '';
+var tanggal = '', link = '';
 var pageno = 0;
+var myModal = $('#myModal');
+var first = true;
+
 $(document).ready(function(){
     $('#pagination').on('click','a',function(e){
         e.preventDefault(); 
@@ -79,8 +83,31 @@ $(document).ready(function(){
             content += "</tr>";
 
             $('#data tbody').append(content);
-
         }
+
+        inits();
     }
+
+    function inits(paramz) {
+        $('.btn-delete').on('click',function (e) {
+            var modalToggle = document.getElementById('modal')
+            myModal.show(modalToggle);
+            link = $(this).data('link')
+            $('#myModal .message').text('Apakah anda yakin ingin menghapus '+$(this).data('nama')+'?')
+
+            $('#ok').click(function (e) {
+                e.stopImmediatePropagation()
+                $.ajax({
+                    url: link,
+                    type: 'get',
+                    success: function(response){
+                        $('#myModal').modal('hide');
+                        createPagination(pageno);
+                    }
+                });
+            })
+        })
+    }
+
 });
     </script>

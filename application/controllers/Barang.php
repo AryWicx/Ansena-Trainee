@@ -21,7 +21,8 @@ class Barang extends CI_Controller {
                 'gambar',
                 'stok',
                 'harga_jual',
-                'harga_beli'
+                'harga_beli',
+                'action',
             ]
         ];
         
@@ -49,6 +50,10 @@ class Barang extends CI_Controller {
         $id = $this->input->post('id');
         if($id){
             $data['data'] = $this->db->get_where('barang', ['id' => $id])->row_array();
+        }else{
+            if(empty($_FILES['gambar']['name'])){
+                $this->form_validation->set_rules('gambar', 'Gambar Produk', 'required');
+            }
         }
         
         $this->form_validation->set_rules('nama', 'Nama', 'required');
@@ -56,28 +61,72 @@ class Barang extends CI_Controller {
         $this->form_validation->set_rules('harga_beli', 'Harga Beli', 'required|is_numeric');
 
         if ($this->form_validation->run() == false) {
+            $data['data'] = $this->input->post();
             $this->load->view('template/index', $data);
         } else {
-            save_data();
+            $this->save_data();
         }
     }
 
     public function save_data(){
-        $config['upload_path'] = './assets/public/';
-        $config['allowed_types'] = 'png|jpg';
-        $config['max_size'] = '20480';
-
-        $this->load->library('upload', $config);
-
-        $path= "./assets/public/";
-
-        if(!$this->upload->do_upload('image')){
-            $this->session->set_flashdata('massage', '<div class="alert alert-warning" role="alert" >Data berhasil disimpan, namun '.$this->upload->display_errors().'</div>');
-        }else{
-            $data['image'] = $this->upload->data('file_name');
-            // $this->db->insert($this->table_user, $data);
+        $data = [
+            'title' => "Barang",
+            'content' => "content/form_barang",
+        ];
+        $id = $this->input->post('id');
+        if($id){
+            $data['data'] = $this->db->get_where('barang', ['id' => $id])->row_array();
         }
 
+        $config['upload_path'] = './assets/public/';
+        $config['allowed_types'] = 'png|jpg';
+        $config['max_size'] = '2048';
+
+        $this->upload->initialize($config);
+        $path= "./assets/public/";
+
+        if($_FILES['gambar']['name'] && !$this->upload->do_upload('gambar')){
+            $data['data'] = $this->input->post();
+            $this->session->set_flashdata('massage', '<div class="alert alert-warning" role="alert" > Failed to upload file, '.$this->upload->display_errors().'</div>');
+            $this->load->view('template/index', $data);
+        }else{
+            $barang = [
+                'nama' => $this->input->post('nama'),
+                'deskripsi' => $this->input->post('deskripsi'),
+                'stok' => $this->input->post('stok'),
+                'harga_jual' => $this->input->post('harga_jual'),
+                'harga_beli' => $this->input->post('harga_jual'),
+            ];
+
+            if($this->upload->data()){ $barang['gambar'] = $this->upload->data('file_name'); }
+            
+            if(isset($data['data'])){ 
+                unset($barang['stok']);
+                if($_FILES['gambar']['name'] && file_exists($path.$data['data']['gambar'])){
+                    unlink($path.$data['data']['gambar']);
+                }
+                $this->db->where('id', $id)->update($this->table, $barang);
+                $this->session->set_flashdata('massage', '<div class="alert alert-success" role="alert"> Record update successfully</div>');
+                redirect('barang');
+            }else{
+                $barang['tanggal_buat'] = date('Y-m-d H:i:s');
+                $this->db->insert($this->table, $barang);
+                $this->session->set_flashdata('massage', '<div class="alert alert-success" role="alert"> Record added successfully</div>');
+                redirect('barang');
+            }
+
+        }
+    }
+
+    public function delete($id = ''){
+        $old = $this->db->get_where('barang', ['id' => $id])->row_array();
+        $path= "./assets/public/";
+
+        if($_FILES['gambar']['name'] && file_exists($path.$old['gambar'])){
+            unlink($path.$old['gambar']);
+        }
+        $this->db->where('id', $id)->delete($this->table);
+        exit(json_encode('ok'));
     }
 
     public function load_data($rowno=0){
@@ -111,10 +160,25 @@ class Barang extends CI_Controller {
     }
 
     public function get_data($rowno, $perpage) {
-        $select = "tanggal_buat, nama, deskripsi, gambar, stok, harga_jual, harga_beli";
+        $select = "id, tanggal_buat, nama, deskripsi, gambar, stok, harga_jual, harga_beli";
 
         if($this->input->get('tanggal')) $this->db->where('tanggal_buat', $this->input->get('tanggal'));
         $data = $this->Ap_db->getData($this->table, $select, $rowno, $perpage );
+        if($data) foreach ($data as $key => $value) {
+            $data[$key]['gambar'] = file_exists("./assets/public/".$value["gambar"]) ? '<a href="'.base_url("assets/public/".$value["gambar"]).'" target="_blank">Link</a>' : 'No image';
+            $data[$key]['action'] = '
+            <a href="'.base_url("barang/form/".$value["id"]).'" class="btn btn-primary btn-sm btn-delete" ><i class="fas fa-edit"></i></a>
+            <button 
+            type="button" 
+            class="btn btn-secondary btn-sm btn-delete" 
+            data-bs-toggle="modal" 
+            data-bs-target="#myModal" 
+            data-nama="'.$value["nama"].'"
+            data-link="'.base_url("barang/delete/".$value["id"]).'"><i class="fas fa-trash"></i></button>';
+            
+            unset($data[$key]['id']);
+        }
+
         return $data;
     }
 
