@@ -26,3 +26,23 @@ label.required:after {
 .pills{
     border-radius: 50%;
 }
+
+.message > .table:first-child > :not(caption) > * > *{
+    border-top-width: 1px;
+}
+
+.message > .table > :not(caption) > * > * > p{
+    font-weight: 400;
+    color: #333333;
+    margin-bottom: 0;
+}
+.select2-container .select2-selection--single,.select2-container--default .select2-selection--single .select2-selection__arrow{
+    height: 40px;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered{
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+}
+.select2-container{
+    width: 100% !important;
+}

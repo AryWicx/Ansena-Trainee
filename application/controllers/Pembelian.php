@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Penjualan extends CI_Controller {
+class Pembelian extends CI_Controller {
 
     public function __construct(){
         parent::__construct();
@@ -10,9 +10,9 @@ class Penjualan extends CI_Controller {
 
     public function index(){
         $data = [
-            'title' => "Transaksi",
+            'title' => "Pembelian",
             'content' => "content/list",
-            'links' => '<a type="button" href="'.base_url('kasir').'" class="btn btn-primary">Penjualan</a>',
+            'links' => '<a type="button" href="'.base_url('pembelian/form').'" class="btn btn-primary">Pembelian</a>',
             'show' => [
                 'no', 'tanggal', 'kode', 'jumlah_item' , 'grand_total', 'action'
             ]
@@ -45,13 +45,79 @@ class Penjualan extends CI_Controller {
 
         echo json_encode($out);
     }
+
+    public function getBarang(){
+        if($this->input->get('s')) $this->db->like('nama', $this->input->get('s', true));
+        $data = $this->db->select('id, nama as text, harga_beli as harga')
+        ->get('barang')->result_array();
+        echo json_encode($data);
+    }
+
+    public function form(){
+        $data = [
+            'title' => "Stok Barang",
+            'content' => "content/form_pembelian",
+        ];
+		$this->load->view('template/index', $data);
+    }
+
+    public function save(){
+        $data = [];
+        $grand_qty = $grandtotal = 0;
+        $id = $this->input->post('id');
+        $harga = $this->input->post('harga');
+        $qty = $this->input->post('qty');
+
+        if($id){
+            foreach ($id as $key => $value) {
+                $item[] = [
+                    'barang_id' => $value,
+                    'harga' => $harga[$key],
+                    'qty' => $qty[$key],
+                    'subtotal' => $harga[$key]*$qty[$key],
+                ];
+
+                $this->db->set('stok', 'stok+'.$qty[$key], FALSE)
+                ->where(['id' => $value])
+                ->update('barang');
+    
+                $grand_qty = $grand_qty + $qty[$key];
+                $grandtotal = $grandtotal + ($qty[$key]*$harga[$key]);
+            }
+    
+            $transaksi = [
+                'kode' => date('Ymdhis'),
+                'grand_qty' => $grand_qty,
+                'grand_total' => $grandtotal,
+                'tanggal' => date('Y-m-d H:i:s'),
+                'type' => "pembelian"
+            ];
+    
+    
+            $this->db->insert($this->table, $transaksi);
+            $id = $this->db->insert_id();
+    
+            if($item) foreach ($item as $ikey => $value) {
+                $item[$ikey]['transaksi_id'] = $id;
+            }
+    
+            $this->db->insert_batch('item_'.$this->table, $item);
+            $this->session->set_flashdata('massage', '<div class="alert alert-primary" role="alert">Transaksi berhasil, Transaksi dapat dilihat pada <a href="'.base_url('pembelian').'" class="alert-link">pembelian</a>.</div>');
+        }else{
+            $this->session->set_flashdata('massage', '<div class="alert alert-primary" role="alert">Transaksi berhasil, Transaksi dapat dilihat pada <a href="'.base_url('pembelian').'" class="alert-link">pembelian</a>.</div>');
+        }
+
+        redirect('pembelian/form');
+    }
     
     public function delete($id = ''){
-        $old = $this->db->get_where('item_transaksi',['transaksi_id' => $id])->result_array();
+        if(!$id) { exit(json_encode('ok')); };
+        
         $update_barang = [];
+        $old = $this->db->get_where('item_transaksi',['transaksi_id' => $id])->result_array();
 
         if($old) foreach($old as $val){
-            $this->db->set('stok', 'stok+'.$val['qty'], FALSE)
+            $this->db->set('stok', 'stok-'.$val['qty'], FALSE)
             ->where(['id' => $val['barang_id']])
             ->update('barang');
         }
@@ -96,7 +162,7 @@ class Penjualan extends CI_Controller {
         $select = "tanggal, kode, jumlah_item , grand_total, transaksi.id";
         
         if($this->input->get('tanggal')) $this->db->where('DATE_FORMAT(tanggal, "%Y-%m-%d") =', $this->input->get('tanggal'));
-        $this->db->where('type','penjualan');
+        $this->db->where('type','pembelian');
         
         $join = [
             '(SELECT COUNT(*) jumlah_item, transaksi_id from item_transaksi GROUP BY transaksi_id) item_transaksi' => 'item_transaksi.transaksi_id = transaksi.id'
@@ -110,14 +176,15 @@ class Penjualan extends CI_Controller {
             class="btn btn-primary btn-sm btn-detail" 
             data-bs-toggle="modal" 
             data-bs-target="#myModal" 
-            data-link="'.base_url("penjualan/detail/".$value["id"]).'"><i class="fas fa-eye"></i></button>
+            data-link="'.base_url("pembelian/detail/".$value["id"]).'"><i class="fas fa-eye"></i></button>
+            
             <button 
             type="button" 
             class="btn btn-secondary btn-sm btn-delete" 
             data-bs-toggle="modal" 
             data-bs-target="#myModal" 
             data-nama="'.$value["kode"].'"
-            data-link="'.base_url("penjualan/delete/".$value["id"]).'"><i class="fas fa-trash"></i></button>';
+            data-link="'.base_url("pembelian/delete/".$value["id"]).'"><i class="fas fa-trash"></i></button>';
             
         }
         return $data;

@@ -1,19 +1,21 @@
 <!doctype html>
 <html>
     <head>
+        <title><?= isset($title) ? $title : "" ?> - Ansena Trainee</title>
         <meta charset="UTF-8">  
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <link href="<?= base_url('assets/css/style.css') ?>" rel="stylesheet">
-        <title><?= isset($title) ? $title : "" ?> - Ansena Trainee</title>
         <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     </head>
     <body>
       <section class="section-navbar">
         <div class="col-sm-12">
           <nav class="navbar navbar-expand-lg navbar navbar-dark bg-dark">
               <div class="container-fluid navbar-container">
-                  <a class="navbar-brand" href="index.html">
+                  <a class="navbar-brand" href="<?= base_url() ?>">
                   <span class="fa-solid fa-shopping-cart fa-sm"></span>
                   Ansena Trainee
                   </a>
@@ -56,7 +58,7 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body message"></div>
-            <div class="modal-footer">
+            <div class="modal-footer action">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               <button type="button" id="ok" class="btn btn-primary">Okey</button>
             </div>

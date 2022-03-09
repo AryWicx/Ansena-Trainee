@@ -6,11 +6,13 @@ Class Ap_db extends CI_Model {
     parent::__construct(); 
   }
 
-  // Fetch records
-  public function getData($table,$select = '*',$rowno,$rowperpage) {
+  public function getData($table,$select = '*',$rowno,$rowperpage, $join = []) {
  
     $this->db->select($select);
     $this->db->from($table);
+    if($join) foreach ($join as $key => $value) { 
+      $this->db->join($key, $value, 'left');
+    }
     $this->db->limit($rowperpage, $rowno);
     $this->db->order_by('id', "DESC");
     $query = $this->db->get();
@@ -18,7 +20,6 @@ Class Ap_db extends CI_Model {
     return $query->result_array();
   }
 
-  // Select total records
   public function getrecordCount($table) {
 
     $this->db->select('count(*) as allcount');

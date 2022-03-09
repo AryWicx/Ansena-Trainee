@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col-xs-12 col-sm-6">
                 <div class="d-flex justify-content-between mb-4">
-                    <h4> <?= $this->uri->segment(3) ? 'Edit' : 'Tambah' ?> <?= isset($title) ? ucfirst($title) : "" ?></h4>
+                    <h5> <?= $this->uri->segment(3) ? 'Edit' : 'Tambah' ?> <?= isset($title) ? ucfirst($title) : "" ?></h5>
                 </div>
                 <?php if(validation_errors()) echo '<div class="alert alert-warning" role="alert" >'.validation_errors().'</div>'; ?>
                 <?php if($this->session->flashdata('massage')) echo $this->session->flashdata('massage'); ?>

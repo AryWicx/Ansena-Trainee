@@ -88,10 +88,11 @@ $(document).ready(function(){
         inits();
     }
 
-    function inits(paramz) {
+    function inits() {
         $('.btn-delete').on('click',function (e) {
             var modalToggle = document.getElementById('modal')
             myModal.show(modalToggle);
+            $('#myModal .action').show();
             link = $(this).data('link')
             $('#myModal .message').text('Apakah anda yakin ingin menghapus '+$(this).data('nama')+'?')
 
@@ -106,6 +107,39 @@ $(document).ready(function(){
                     }
                 });
             })
+        })
+
+        $('.btn-detail').on('click',function (e) {
+            var modalToggle = document.getElementById('modal')
+            myModal.show(modalToggle);
+            link = $(this).data('link')
+            $('#myModal .title').text('Detail Transaksi')
+            $('#myModal .action').hide();
+
+            
+            $.ajax({
+                url: link,
+                type: 'get',
+                dataType: 'json',
+                success: function(response){
+                    var template = `<table class="table"><tbody>`;
+                    for(index in response){
+                        console.log(response[index].nama)
+                        template += `<tr>
+                        <th scope="row"> 
+                            ${response[index].nama || '' } 
+                            ${response[index].qty && response[index].harga ? '<p>'+response[index].qty+'X '+response[index].harga+'</p>' : '' }
+                        </th>
+                        <td>${response[index].subtotal || '' }</td>
+                        </tr>`
+                    }
+                    template += `</tbody></table>`;
+                    $('#myModal .message').html(template)
+                }
+                
+            });
+
+            
         })
     }
 

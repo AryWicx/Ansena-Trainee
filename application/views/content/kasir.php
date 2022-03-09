@@ -5,6 +5,7 @@
                 <div class="d-flex justify-content-between mb-3">
                     <h5>Kasir</h5>
                 </div>
+                <?php if($this->session->flashdata('massage')) echo $this->session->flashdata('massage'); ?>
             </div>
 
                 <div class="row no-padding kasir-hero">
@@ -83,7 +84,7 @@ $(document).ready(function(){
             success: function(response){
                 var cart_content = '';
                 for(index in response){
-                    if(response[index]['qty'] !== 0){
+                    if(parseInt(response[index]['qty']) !== 0){
                         cart_content += `<tr>
                                         <th scope="row">${ response[index]['nama'] || '' }
                                             <div class="text-left mt-2">
@@ -103,10 +104,11 @@ $(document).ready(function(){
                 $('.data-cart tbody').empty();
                 $('.data-cart tbody').append(cart_content);
                 $('.card-cart').empty();
-                $('.card-cart').append(`<div class="d-grid gap-2"><a href="<?= base_url('kasir/checkout') ?>" class="btn btn-primary btn-block" >Checkout (${ total || '0' }) </button></div>`);
                 if(total == 0){
+                    $('.card-cart').append(`<div class="d-grid gap-2"><a href="#" class="btn btn-secondary btn-block" >Checkout (${ total || '0' }) </button></div>`);
                     $('.data-cart tbody').append('<td class="hide" colspan="2"><i>Cart is empty</i></td>');
                 }else{
+                    $('.card-cart').append(`<div class="d-grid gap-2"><a href="<?= base_url('kasir/checkout') ?>" class="btn btn-primary btn-block" >Checkout (${ total || '0' }) </button></div>`);
                     $('.data-cart tbody hide').remove();
 
                 }

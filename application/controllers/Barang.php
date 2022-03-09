@@ -107,14 +107,12 @@ class Barang extends CI_Controller {
                 }
                 $this->db->where('id', $id)->update($this->table, $barang);
                 $this->session->set_flashdata('massage', '<div class="alert alert-success" role="alert"> Record update successfully</div>');
-                redirect('barang');
             }else{
                 $barang['tanggal_buat'] = date('Y-m-d H:i:s');
                 $this->db->insert($this->table, $barang);
                 $this->session->set_flashdata('massage', '<div class="alert alert-success" role="alert"> Record added successfully</div>');
-                redirect('barang');
             }
-
+            redirect('barang');
         }
     }
 
@@ -162,7 +160,7 @@ class Barang extends CI_Controller {
     public function get_data($rowno, $perpage) {
         $select = "id, tanggal_buat, nama, deskripsi, gambar, stok, harga_jual, harga_beli";
 
-        if($this->input->get('tanggal')) $this->db->where('tanggal_buat', $this->input->get('tanggal'));
+        if($this->input->get('tanggal')) $this->db->where('DATE_FORMAT(tanggal_buat, "%Y-%m-%d") =', $this->input->get('tanggal'));
         $data = $this->Ap_db->getData($this->table, $select, $rowno, $perpage );
         if($data) foreach ($data as $key => $value) {
             $data[$key]['gambar'] = file_exists("./assets/public/".$value["gambar"]) ? '<a href="'.base_url("assets/public/".$value["gambar"]).'" target="_blank">Link</a>' : 'No image';

@@ -5,7 +5,7 @@ class Kasir extends CI_Controller {
 
     public function __construct(){
         parent::__construct();
-        $this->table = 'barang';
+        $this->table = 'transaksi';
     }
 
 
@@ -71,57 +71,82 @@ class Kasir extends CI_Controller {
                 $id[] = $value['id'];
             }
             
-            $data = $this->db->select('id, nama, harga_jual')->where_in('id', $id)->get('barang')->result_array();
+            $data = $this->db->select('id, nama, stok, harga_jual')->where_in('id', $id)->get('barang')->result_array();
             
-            foreach ($data as $key => $value) {
+            foreach ($data as $value) {
                 $key = array_search($value['id'], array_column($cart, 'id'));
                 $cart[$key]['nama'] = $value['nama'];
                 $cart[$key]['harga_jual'] = $value['harga_jual'];
-                $cart[$key]['subtotal'] = $value['harga_jual']*$cart[$key]['qty'];
-                $cart[$key]['nama'] = $value['nama'];
+
+                $qty = $cart[$key]['qty'] < $value['stok'] ? $cart[$key]['qty'] : $value['stok'];
+
+                $cart[$key]['qty'] = (int)$qty;
+                $cart[$key]['subtotal'] = $value['harga_jual']*$qty;
             }
 
-            
         }
 
         echo json_encode($cart);
     }
 
     public function checkout(){
-        
         $cart = $this->session->userdata('cart');
-        $item = $transaksi = [];
+        $item = $transaksi = $barang = [];
         $grand_qty = $grand_total = 0;
         if($cart){
-            foreach ($cart as $key => $value) {
-                $id[] = $value['id'];
-            }
-            $data = $this->db->select('id, harga_jual')->where_in('id', $id)->get('barang')->result_array();
+            foreach ($cart as $value) { $id[] = $value['id']; }
+
+            $data = $this->db->select('id, harga_jual, stok')->where_in('id', $id)->get('barang')->result_array();
            
-            // kode 	grand_qty 	grand_total 	tanggal 	type 
-            // id 	transaksi_id 	barang_id 	harga 	qty 	subtotal 
-            foreach ($data as $key => $value) {
+            foreach ($data as $dkey => $value) {
                 $key = array_search($value['id'], array_column($cart, 'id'));
-                if($cart[$key]['qty'] != 0){
-                    $item[$key]['qty'] = $cart[$key]['qty'];
-                    $item[$key]['barang_id'] = $value['id'];
-                    $item[$key]['harga'] = $value['harga_jual'];
-                    $item[$key]['subtotal'] = $value['harga_jual']*$cart[$key]['qty'];
+                $qty = $cart[$key]['qty'] < $value['stok'] ? $cart[$key]['qty'] : $value['stok'];
+
+                if($qty != 0){
+                    $item[$dkey]['qty'] = $cart[$key]['qty'];
+                    $item[$dkey]['barang_id'] = $value['id'];
+                    $item[$dkey]['harga'] = $value['harga_jual'];
+                    $item[$dkey]['subtotal'] = $value['harga_jual']*$cart[$key]['qty'];
 
                     $grand_qty += $cart[$key]['qty'];
-                    $grand_total += $item[$key]['subtotal'];
+                    $grand_total += $item[$dkey]['subtotal'];
+
+                    $sisa_stok = $value['stok'] - $qty;
+                    $barang[] = [
+                        'id' => $value['id'],
+                        'stok' => $sisa_stok,
+                    ];
                 }
             }
+
+            $transaksi = [
+                'kode' => date('Ymdhis'),
+                'grand_qty' => $grand_qty,
+                'grand_total' => $grand_total,
+                'tanggal' => date('Y-m-d H:i:s'),
+                'type' => "penjualan"
+            ];
+    
+            $this->db->insert($this->table, $transaksi);
+            $id = $this->db->insert_id();
+
+            if($item) foreach ($item as $ikey => $value) {
+                $item[$ikey]['transaksi_id'] = $id;
+            }
+
+            $this->db->insert_batch('item_'.$this->table, $item);
+            $this->db->update_batch('barang', $barang, 'id');
+
+            $this->clear_cart();
+            
+            $this->session->set_flashdata('massage', '<div class="alert alert-primary" role="alert">Transaksi berhasil, Transaksi dapat dilihat pada <a href="'.base_url('penjualan').'" class="alert-link">penjualan</a>.</div>');
+        }else{
+            $this->session->set_flashdata('massage', '<div class="alert alert-warning" role="alert"> Data tidak valid</div>');
         }
 
-        $transaksi = [
-
-        ];
-        echo '<pre>';
-        print_r($item);
-        echo '</pre>';
+        redirect('kasir');
     }
-
+    
     public function clear_cart(){
         $this->session->unset_userdata('cart');
     }
